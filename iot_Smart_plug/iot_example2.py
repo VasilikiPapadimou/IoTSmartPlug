@@ -122,7 +122,7 @@ class IoTExample:
 	def _my_timer(self):
 		self._refresh_plot()
 		if not self.finishing:
-			Timer(4.0, self._my_timer).start()#........
+			Timer(4.0, self._my_timer).start()
 
 	#Refreshing the plot when a new result is created
 	def _refresh_plot(self):
