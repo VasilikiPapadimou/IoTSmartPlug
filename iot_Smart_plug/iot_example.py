@@ -80,25 +80,33 @@ class IoTExample:
 		print('log: ', buf)
 
 
-	#
+	#Creation of the whole plot
 	def _prepare_graph_window(self):
-	# Plot variables
+		# Plot variables initialization
+		#Run and Configure =rcParams
 		plt.rcParams['toolbar'] = 'None'
-		plt.ylabel('Power (Watt)') #Label of y axis 
-		plt.xlabel('Time') # Label of x axis
+		plt.ylabel('Power (Watt)')  
+		plt.xlabel('Time') 
+		#Create the subplot with  1 raw, 1 col, 1 index from the top left corner
 		self.ax = plt.subplot(111)
 		self.dataX = []
 		self.dataY = []
 		self.first_ts = datetime.now()
+		#View of the plot data in both Axes
 		self.lineplot, = self.ax.plot(
 			self.dataX, self.dataY, linestyle='--', marker='o', color='g') #Collor of the plot
+		#When we pres X at the plot canvas, close the whole event.
 		self.ax.figure.canvas.mpl_connect('close_event', self.disconnect)
-
-		axcut = plt.axes([0.0, 0.0, 0.1, 0.06])
+		
+		"""	Where to put the ON/OFF Button and the textfield
+			left, bottom, width, height
+		"""
+		axcut = plt.axes([0.12, 0.9, 0.1, 0.06])
 		self.bcut = Button(axcut, 'ON')
-		axcut2 = plt.axes([0.1, 0.0, 0.1, 0.06])
+		axcut2 = plt.axes([0.22, 0.9, 0.1, 0.06])
 		self.bcut2 = Button(axcut2, 'OFF')
-		self.state_field = plt.text(1.5, 0.3, 'STATE: -')
+		self.state_field = plt.text(0.5, 1.3, 'Power consumed by a smartplug within a TimeStep')
+		#What action/method to be performed if ON/OFF
 		self.bcut.on_clicked(self._button_on_clicked)
 		self.bcut2.on_clicked(self._button_off_clicked)
 
@@ -118,15 +126,14 @@ class IoTExample:
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'OFF')
 
 
-	#
+	#To move the plot right every 2sec
 	def _my_timer(self):
 		self._refresh_plot()
 		if not self.finishing:
-			#
-			Timer(0.5, self._my_timer).start()
+			Timer(2.0, self._my_timer).start()
 
 
-	#
+	#Refreshing the plot when a new result is created
 	def _refresh_plot(self):
 		if len(self.dataX) > 0:
 			self.ax.set_xlim(min(self.first_ts, min(self.dataX)),
@@ -139,7 +146,7 @@ class IoTExample:
 		plt.draw()
 
 
-	#
+	#To add new value to the plot
 	def _add_value_to_plot(self, value):
 		self.dataX.append(datetime.now())
 		self.dataY.append(value)
