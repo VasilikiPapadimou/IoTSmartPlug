@@ -32,7 +32,6 @@ class IoTExample:
 	def disconnect(self, args=None):
 		self.client.disconnect()
 
-
 	""" Creation of objects ready to connect to the Broker
 		How this method is used: 
 		self.client.SOMETHING-> creates an object inside this method
@@ -47,8 +46,7 @@ class IoTExample:
 		#Everytime we take a message _on_message from paho is called
 		self.client.on_message = self._on_message
 		
-		print('Trying to connect to MQTT server...')
-		
+		print('Trying to connect to MQTT server...')		
 		#Cryptography through ssl for receiving/sending messages
 		self.client.tls_set_context(ssl.SSLContext(ssl.PROTOCOL_TLSv1_2))
 		#We set the password and username
@@ -56,7 +54,6 @@ class IoTExample:
 		#Connection to ntua MQTT Broker (DNS and port we use)
 		self.client.connect('phoenix.medialab.ntua.gr', 8883)
 		
-
 	#Runs whenever a new connection is established
 	def _on_connect(self, client, userdata, flags, rc):
 		print('Connect with result code' +str(rc))
@@ -66,8 +63,7 @@ class IoTExample:
 		client.subscribe('hscnl/hscnl02/command/ZWaveNode005_Switch/command')
 		# it shows if the smartplug is ON/OFF
 		client.subscribe('hscnl/hscnl02/state/ZWaveNode005_Switch/state')
-	
-	
+		
 	#Runs whenever a new message is received
 	#show the changes on the graph (line 75)
 	def _on_message(self, client, userdata, msg):
@@ -75,11 +71,9 @@ class IoTExample:
 						self._add_value_to_plot(float(msg.payload))
 		print(msg.topic+''+str(msg.payload))
 
-
 	#Runs whenever a new log event is created
 	def _on_log(self, client, userdata, level, buf):
 		print('log: ', buf)
-
 
 	#Creation of the whole plot
 	def _prepare_graph_window(self):
@@ -95,7 +89,7 @@ class IoTExample:
 		self.first_ts = datetime.now()
 		#View of the plot data in both Axes
 		self.lineplot, = self.ax.plot(
-			self.dataX, self.dataY, linestyle='--', marker='o', color='g') #Collor of the plot
+			self.dataX, self.dataY, linestyle='--', marker='o', color='g') 
 		#When we pres X at the plot canvas, close the whole event.
 		self.ax.figure.canvas.mpl_connect('close_event', self.disconnect)
 		
@@ -114,25 +108,21 @@ class IoTExample:
 		self.finishing = False
 		self._my_timer()
 
-
 	#For sending ON message to the MQTTBroker from distance
 	def _button_on_clicked(self, event):
 		self.client.publish(
-			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'ON')
-	
+			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'ON')	
 	
 	#For sending OFF message to the MQTTBroker from distance
 	def _button_off_clicked(self, event):
 		self.client.publish(
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'OFF')
 
-
 	#To move the plot right every 4sec
 	def _my_timer(self):
 		self._refresh_plot()
 		if not self.finishing:
 			Timer(4.0, self._my_timer).start()
-
 
 	#Refreshing the plot when a new result is created
 	def _refresh_plot(self):
@@ -145,7 +135,6 @@ class IoTExample:
 			self.ax.set_xlim(self.first_ts, datetime.now())
 			self.ax.relim()
 		plt.draw()
-
 
 	#To add new value to the plot
 	def _add_value_to_plot(self, value):
