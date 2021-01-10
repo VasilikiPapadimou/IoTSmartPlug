@@ -10,30 +10,30 @@ from threading import Timer
 from datetime import datetime
 
 class IoTExample:
-	
-	
-	#
+	#Method to start with (Main)
 	def __init__(self):
 		self.ax = None
 		self._establish_mqtt_connection()
 		self._prepare_graph_window()
 	
-
-	#
+	#When do we need/need not MQTT Client to be blocked  
 	def start(self):
 		if self.ax:
+			#NeedNot->end the program, 
+			#We don't need to have control of the programs graphics   
 			self.client.loop_start()
 			plt.show()
 		else:
+			#Need-> don't end the program and wait for messages
+			#call this method to start client loop (without ending)
 			self.client.loop_forever()
 
-
-	#		
+	# Disconnecion from MQTT Broker		
 	def disconnect(self, args=None):
 		self.client.disconnect()
 
 
-	""" Creation of objects ready to connect
+	""" Creation of objects ready to connect to the Broker
 		How this method is used: 
 		self.client.SOMETHING-> creates an object inside this method
 	 	self.METHOD -> goes to the method called and runs it.
@@ -46,6 +46,7 @@ class IoTExample:
 		self.client.on_log = self._on_log
 		#Everytime we take a message _on_message from paho is called
 		self.client.on_message = self._on_message
+		
 		print('Trying to connect to MQTT server...')
 		
 		#Cryptography through ssl for receiving/sending messages
@@ -56,7 +57,7 @@ class IoTExample:
 		self.client.connect('phoenix.medialab.ntua.gr', 8883)
 		
 
-	#In this method we create the connections we need 
+	#Runs whenever a new connection is established
 	def _on_connect(self, client, userdata, flags, rc):
 		print('Connect with result code' +str(rc))
 		#It shows the power consumtion at an exact time 
@@ -67,14 +68,14 @@ class IoTExample:
 		client.subscribe('hscnl/hscnl02/state/ZWaveNode005_Switch/state')
 	
 	
-	#
+	#Runs whenever a new message is received
 	def _on_message(self, client, userdata, msg):
 		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode005_ElectricMeterWatts/state':
 						self._add_value_to_plot(float(msg.payload))
 		print(msg.topic+''+str(msg.payload))
 
 
-	#
+	#Runs whenever a new log event is created
 	def _on_log(self, client, userdata, level, buf):
 		print('log: ', buf)
 
@@ -105,13 +106,13 @@ class IoTExample:
 		self._my_timer()
 
 
-	#
+	#For sending ON message to the MQTTBroker
 	def _button_on_clicked(self, event):
 		self.client.publish(
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'ON')
 	
 	
-	#
+	#For sending OFF message to the MQTTBroker
 	def _button_off_clicked(self, event):
 		self.client.publish(
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'OFF')
