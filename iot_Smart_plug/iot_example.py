@@ -10,19 +10,19 @@ from threading import Timer
 from datetime import datetime
 
 class IoTExample:
-	#Method to start with (Main)
+	#Method to start with (Main) 
 	def __init__(self):
 		self.ax = None
 		self._establish_mqtt_connection()
-		self._prepare_graph_window()
+		self._prepare_graph_window() #show the changes on the graph
 	
-	#When do we need/need not MQTT Client to be blocked  
+	#When do we need/need not MQTT Client to be blocked 
 	def start(self):
 		if self.ax:
 			#NeedNot->end the program, 
 			#We don't need to have control of the programs graphics   
 			self.client.loop_start()
-			plt.show()
+			plt.show() #show the changes on the graph
 		else:
 			#Need-> don't end the program and wait for messages
 			#call this method to start client loop (without ending)
@@ -69,6 +69,7 @@ class IoTExample:
 	
 	
 	#Runs whenever a new message is received
+	#show the changes on the graph (line 75)
 	def _on_message(self, client, userdata, msg):
 		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode005_ElectricMeterWatts/state':
 						self._add_value_to_plot(float(msg.payload))
@@ -114,23 +115,23 @@ class IoTExample:
 		self._my_timer()
 
 
-	#For sending ON message to the MQTTBroker
+	#For sending ON message to the MQTTBroker from distance
 	def _button_on_clicked(self, event):
 		self.client.publish(
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'ON')
 	
 	
-	#For sending OFF message to the MQTTBroker
+	#For sending OFF message to the MQTTBroker from distance
 	def _button_off_clicked(self, event):
 		self.client.publish(
 			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'OFF')
 
 
-	#To move the plot right every 2sec
+	#To move the plot right every 4sec
 	def _my_timer(self):
 		self._refresh_plot()
 		if not self.finishing:
-			Timer(2.0, self._my_timer).start()
+			Timer(4.0, self._my_timer).start()
 
 
 	#Refreshing the plot when a new result is created

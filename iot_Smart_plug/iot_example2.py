@@ -1,66 +1,96 @@
+#All the libraries we need to create tha programm for smartplug.
 import paho.mqtt.client as mqtt
 import ssl
 import sys
 import os
 import matplotlib.pyplot as plt
+#We use from to take something specific from a library
 from matplotlib.widgets import Button
 from threading import Timer
 from datetime import datetime
 
 class IoTExample:
+	#Method to start with (Main) 
 	def __init__(self):
 		self.ax = None
 		self._establish_mqtt_connection()
-		self._prepare_graph_window()
+		self._prepare_graph_window() #show the changes on the graph
 	
+	#When do we need/need not MQTT Client to be blocked 
 	def start(self):
 		if self.ax:
+			#NeedNot->end the program, 
+			#We don't need to have control of the programs graphics   
 			self.client.loop_start()
-			plt.show()
+			plt.show() #show the changes on the graph
 		else:
+			#Need-> don't end the program and wait for messages
+			#call this method to start client loop (without ending)
 			self.client.loop_forever()
-			
+
+	# Disconnecion from MQTT Broker		
 	def disconnect(self, args=None):
 		self.client.disconnect()
 
+	""" Creation of objects ready to connect to the Broker
+		How this method is used: 
+		self.client.SOMETHING-> creates an object inside this method
+	 	self.METHOD -> goes to the method called and runs it.
+	"""
 	def _establish_mqtt_connection(self):
 		self.client = mqtt.Client()
-		self.client.on_connect = self._on_connect
+		#When the installation of connection is complete call _on_connect method
+		self.client.on_connect = self._on_connect 
+		#Creation of diagnostic messages for the MQTT connection
 		self.client.on_log = self._on_log
+		#Everytime we take a message _on_message from paho is called
 		self.client.on_message = self._on_message
-
-		print('Trying to connect to MQTT server...')
-		self.client.tls_set_context(ssl.SSLContext(ssl.PROTOCOL_TLSv1_2))
-		self.client.username_pw_set('iotlesson', 'YGK0tx5pbtkK2WkCBvJlJWCg')
-		self.client.connect('phoenix.medialab.ntua.gr', 8883)
 		
-
+		print('Trying to connect to MQTT server...')		
+		#Cryptography through ssl for receiving/sending messages
+		self.client.tls_set_context(ssl.SSLContext(ssl.PROTOCOL_TLSv1_2))
+		#We set the password and username
+		self.client.username_pw_set('iotlesson', 'YGK0tx5pbtkK2WkCBvJlJWCg')
+		#Connection to ntua MQTT Broker (DNS and port we use)
+		self.client.connect('phoenix.medialab.ntua.gr', 8883)
+	
+	#Runs whenever a new connection is established
 	def _on_connect(self, client, userdata, flags, rc):
 		print('Connect with result code' +str(rc))
+		#It shows the power consumtion at an exact time 
 		client.subscribe('hscnl/hscnl02/state/ZWaveNode006_ElectricMeterWatts/state')
-		client.subscribe('hscnl/hscnl02/command/ZWaveNode006_Switch/command')
-		client.subscribe('hscnl/hscnl02/state/ZWaveNode006_Switch/state')
-
+		# Commands we have sent to the smartplug
+		client.subscribe('hscnl/hscnl02/command/ZWaveNode005_Switch/command')
+		# it shows if the smartplug is ON/OFF
+		client.subscribe('hscnl/hscnl02/state/ZWaveNode005_Switch/state')
+	
+	#Runs whenever a new message is received
+	#show the changes on the graph (line 75)
 	def _on_message(self, client, userdata, msg):
-		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode006_ElectricMeterWatts/state':
+		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode005_ElectricMeterWatts/state':
 						self._add_value_to_plot(float(msg.payload))
 		print(msg.topic+''+str(msg.payload))
 
+	#Runs whenever a new log event is created
 	def _on_log(self, client, userdata, level, buf):
 		print('log: ', buf)
 
-
+	#Creation of the whole plot
 	def _prepare_graph_window(self):
-# Plot variables
+		# Plot variables initialization
+		#Run and Configure =rcParams
 		plt.rcParams['toolbar'] = 'None'
-		plt.ylabel('Watts')#......
-		plt.xlabel('Timestep')#......
+		plt.ylabel('Power (Watt)')  
+		plt.xlabel('Time') 
+		#Create the subplot with  1 raw, 1 col, 1 index from the top left corner
 		self.ax = plt.subplot(111)
 		self.dataX = []
 		self.dataY = []
 		self.first_ts = datetime.now()
+		#View of the plot data in both Axes
 		self.lineplot, = self.ax.plot(
-			self.dataX, self.dataY, linestyle='--', marker='o', color='g')#........
+			self.dataX, self.dataY, linestyle='--', marker='o', color='o')
+		#When we pres X at the plot canvas, close the whole event.
 		self.ax.figure.canvas.mpl_connect('close_event', self.disconnect)
 
 		axcut = plt.axes([0.0, 0.0, 0.1, 0.06])
