@@ -60,14 +60,14 @@ class IoTExample:
 		#It shows the power consumtion at an exact time 
 		client.subscribe('hscnl/hscnl02/state/ZWaveNode006_ElectricMeterWatts/state')
 		# Commands we have sent to the smartplug
-		client.subscribe('hscnl/hscnl02/command/ZWaveNode005_Switch/command')
+		client.subscribe('hscnl/hscnl02/command/ZWaveNode006_Switch/command')
 		# it shows if the smartplug is ON/OFF
-		client.subscribe('hscnl/hscnl02/state/ZWaveNode005_Switch/state')
+		client.subscribe('hscnl/hscnl02/state/ZWaveNode006_Switch/state')
 	
 	#Runs whenever a new message is received
 	#show the changes on the graph (line 75)
 	def _on_message(self, client, userdata, msg):
-		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode005_ElectricMeterWatts/state':
+		if msg.topic == 'hscnl/hscnl02/state/ZWaveNode006_ElectricMeterWatts/state':
 						self._add_value_to_plot(float(msg.payload))
 		print(msg.topic+''+str(msg.payload))
 
@@ -111,18 +111,18 @@ class IoTExample:
 	#For sending ON message to the MQTTBroker from distance
 	def _button_on_clicked(self, event):
 		self.client.publish(
-			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'ON')
+			'hscnl/hscnl02/sendcommand/ZWaveNode006_Switch', 'ON')
 
 	#For sending OFF message to the MQTTBroker from distance		
 	def _button_off_clicked(self, event):
 		self.client.publish(
-			'hscnl/hscnl02/sendcommand/ZWaveNode005_Switch', 'OFF')
+			'hscnl/hscnl02/sendcommand/ZWaveNode006_Switch', 'OFF')
 
 	#To move the plot right every 4sec
 	def _my_timer(self):
 		self._refresh_plot()
 		if not self.finishing:
-			Timer(4.0, self._my_timer).start()#........
+			Timer(4.0, self._my_timer).start()
 
 	#Refreshing the plot when a new result is created
 	def _refresh_plot(self):
